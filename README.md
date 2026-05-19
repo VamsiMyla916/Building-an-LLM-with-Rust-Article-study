@@ -47,4 +47,34 @@ Questions that popped up during the study:
 
 ### 3. Scalability
 
+##Resources: [About Transformers](https://youtu.be/lopXj1p6Ewk?si=XnRMJLDPw4PwhJrm)
+
+##What are we building?
+
+### 'Feste' -> A GPT 2 Style Architecture model built in complete Rust as in general using Tensorflow/PyTorch for building transofrmer model abstracts away (eliminates or gives a theoretical level idea) math so that we can focus on the architecture. But in Rust it includes low-level memory management, performance, borrow checker on ownership and memory (control over all these things) safety.
+
+#Why Tokenization matter?
+
+##Considering the following example:
+
+["he", "llo"] -> say "he" represents tokenID 530 and "llo" tokenID 840 respectively
+
+[" he","llo "] -> say " he" represents tokenID 460 and "llo " tokenID 670 respectively
+
+["ol", "leh"] -> say "ol" represents tokenID 91 and "leh" represents tokenID 133 respectively
+
+Though the memory contains the word "hello", it can't reverse the string because of different tokenIDs in each scenario resulting in a mismatch. This is one of the reasons a simple LLM stuggles to perform operations on a string like reversing it. At word level tokenization is not efficient.
+
+# Algorithm used for Tokenization by Feste is BPE
+
+## The goal is to convert Text to TokenIDs -> process neural networks -> convert those tokenIDs back to text and generate the output.
+
+## Instead of using tokenization at the word level we would go to character level where each character is a token.
+
+## Byte level -> 8bit (binary digits) represent exactly 256 values.
+
+## English characters use 1 byte each while others use multiple bytes. For example emojis use 4bytes.
+
+## Each byte gets it's own tokenID in the file
+
 What are we building (to be continued for 6th may)
