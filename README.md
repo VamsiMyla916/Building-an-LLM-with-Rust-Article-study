@@ -77,4 +77,34 @@ Though the memory contains the word "hello", it can't reverse the string because
 
 ## Each byte gets it's own tokenID in the file
 
-What are we building (to be continued for 6th may)
+![image1 of BPE math](image.png)
+![image2 of BPE math](image-1.png)
+![image3 of BPE math](image-2.png)
+
+#Implementation Details:
+
+## Starting with 256 entries mapping hex-encoded bytes to IDs (0-255)
+
+## During training -> add entries for each merge
+
+## Merge rules stored in a vector for order significance
+
+#Example
+
+## Before encoding "the" -> should apply merge1(M1) first for token256 then apply merge50 (M50)
+
+## M1 -> "th" <74><68> token 256 ...... M50 ->"the" => token 256+<65> = token 300
+
+## Training process is completely deterministic like count pairs, find frequently occurring pairs, merge them, repeat. This ensures in no randomness.
+
+# Training Performance
+
+## Bottleneck: Counting adjacent pairs in the corpus
+
+## Instead of single threaded implementation, using Rayon(Rust library) for parallel counting where chunks (chunk1,chunk2...etc) are divided and counted in parallel.
+
+## Each thread checks its chunk boundary and count pair between last token and next chunk's first token such that no pairs are missed.
+
+## Sequential: Apply merge rules and updating corpus
+
+## Parallelism: Chunk boundary checks so that no pair is missed.
