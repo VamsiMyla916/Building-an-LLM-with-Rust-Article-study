@@ -1,8 +1,9 @@
-Learnings so far from the [Building LLM from scratch using Rust](https://www.tag1.com/how-to/part1-tokenization-building-an-llm-from-scratch-in-rust/)
+# Learnings so far from the [Building LLM from scratch using Rust](https://www.tag1.com/how-to/part1-tokenization-building-an-llm-from-scratch-in-rust/)
 
 Tokenization, building an LLM from scratch using Rust.
 
-Part 1:
+# Part 1:
+
 3 things:
 
 1. Converting Text to numbers using Byte Pair Encoding (BPE)
@@ -19,21 +20,21 @@ Questions that popped up during the study:
 
 ## Learning about Transformer
 
-### Question: What exactly is a transformer and difference between transformer and a language model?
+Question: What exactly is a transformer and difference between transformer and a language model?
 
-### Transformer is a deep learning architecture used in the language model. It basically has encoding-decoding structure and works on the "Attention Mechanism"
+Transformer is a deep learning architecture used in the language model. It basically has encoding-decoding structure and works on the "Attention Mechanism"
 
 ## What is attention mechanism?
 
-### This method finds the relation between multiple words and how are they related with each other in a sentence.
+This method finds the relation between multiple words and how are they related with each other in a sentence.
 
-## Difference between transformer and a conventional NN: This Transformer is found as a replacement for RNN/CNN. The conventional neural networks process data sequentially which takes a lot of time and storage space where as Transformer model can process large amount of data points parallelly like finding relevance, encoding, decoding etc.
+Difference between transformer and a conventional NN: This Transformer is found as a replacement for RNN/CNN. The conventional neural networks process data sequentially which takes a lot of time and storage space where as Transformer model can process large amount of data points parallelly like finding relevance, encoding, decoding etc.
 
 ## More about the transformer model:
 
-### Transformer model holds a large amount of context. Transformer model does paralelly processes parameters like grammar, emotion etc. It has multi-head self attention for finding and understanding relationship between words. It also does positional encoding to maintain the order of words in a sentence.
+Transformer model holds a large amount of context. Transformer model does paralelly processes parameters like grammar, emotion etc. It has multi-head self attention for finding and understanding relationship between words. It also does positional encoding to maintain the order of words in a sentence.
 
-### Example: Ramu goes to temple in his village. In this sentence the word "his" refers to the person name "Ramu". This is identified by the model using the self attention mechanism.
+Example: Ramu goes to temple in his village. In this sentence the word "his" refers to the person name "Ramu". This is identified by the model using the self attention mechanism.
 
 ## Applications:
 
@@ -41,21 +42,21 @@ Questions that popped up during the study:
 
 ## Benefits:
 
-### 1. Long range context
+1. Long range context
 
-### 2. Concurrency/Parallelism
+1. Concurrency/Parallelism
 
-### 3. Scalability
+1. Scalability
 
-##Resources: [About Transformers](https://youtu.be/lopXj1p6Ewk?si=XnRMJLDPw4PwhJrm)
+Resources: [About Transformers](https://youtu.be/lopXj1p6Ewk?si=XnRMJLDPw4PwhJrm)
 
-##What are we building?
+## What are we building?
 
-### 'Feste' -> A GPT 2 Style Architecture model built in complete Rust as in general using Tensorflow/PyTorch for building transofrmer model abstracts away (eliminates or gives a theoretical level idea) math so that we can focus on the architecture. But in Rust it includes low-level memory management, performance, borrow checker on ownership and memory (control over all these things) safety.
+#### 'Feste' -> A GPT 2 Style Architecture model built in complete Rust as in general using Tensorflow/PyTorch for building transofrmer model abstracts away (eliminates or gives a theoretical level idea) math so that we can focus on the architecture. But in Rust it includes low-level memory management, performance, borrow checker on ownership and memory (control over all these things) safety.
 
-#Why Tokenization matter?
+# Why Tokenization matter?
 
-##Considering the following example:
+## Considering the following example:
 
 ["he", "llo"] -> say "he" represents tokenID 530 and "llo" tokenID 840 respectively
 
@@ -67,44 +68,46 @@ Though the memory contains the word "hello", it can't reverse the string because
 
 # Algorithm used for Tokenization by Feste is BPE
 
-## The goal is to convert Text to TokenIDs -> process neural networks -> convert those tokenIDs back to text and generate the output.
+The goal is to convert Text to TokenIDs -> process neural networks -> convert those tokenIDs back to text and generate the output.
 
-## Instead of using tokenization at the word level we would go to character level where each character is a token.
+Instead of using tokenization at the word level we would go to character level where each character is a token.
 
-## Byte level -> 8bit (binary digits) represent exactly 256 values.
+Byte level -> 8bit (binary digits) represent exactly 256 values.
 
-## English characters use 1 byte each while others use multiple bytes. For example emojis use 4bytes.
+English characters use 1 byte each while others use multiple bytes. For example emojis use 4bytes.
 
-## Each byte gets it's own tokenID in the file
+Each byte gets it's own tokenID in the file
 
 ![image1 of BPE math](image.png)
 ![image2 of BPE math](image-1.png)
 ![image3 of BPE math](image-2.png)
 
-#Implementation Details:
+# Implementation Details:
 
-## Starting with 256 entries mapping hex-encoded bytes to IDs (0-255)
+Starting with 256 entries mapping hex-encoded bytes to IDs (0-255)
 
-## During training -> add entries for each merge
+During training -> add entries for each merge
 
-## Merge rules stored in a vector for order significance
+Merge rules stored in a vector for order significance
 
-#Example
+# Example
 
-## Before encoding "the" -> should apply merge1(M1) first for token256 then apply merge50 (M50)
+Before encoding "the" -> should apply merge1(M1) first for token256 then apply merge50 (M50)
 
-## M1 -> "th" <74><68> token 256 ...... M50 ->"the" => token 256+<65> = token 300
+M1 -> "th" <74><68> token 256 ...... M50 ->"the" => token 256+<65> = token 300
 
-## Training process is completely deterministic like count pairs, find frequently occurring pairs, merge them, repeat. This ensures in no randomness.
+Training process is completely deterministic like count pairs, find frequently occurring pairs, merge them, repeat. This ensures in no randomness.
 
 # Training Performance
 
-## Bottleneck: Counting adjacent pairs in the corpus
+Bottleneck: Counting adjacent pairs in the corpus
 
-## Instead of single threaded implementation, using Rayon(Rust library) for parallel counting where chunks (chunk1,chunk2...etc) are divided and counted in parallel.
+Instead of single threaded implementation, using Rayon(Rust library) for parallel counting where chunks (chunk1,chunk2...etc) are divided and counted in parallel.
 
-## Each thread checks its chunk boundary and count pair between last token and next chunk's first token such that no pairs are missed.
+Each thread checks its chunk boundary and count pair between last token and next chunk's first token such that no pairs are missed.
 
-## Sequential: Apply merge rules and updating corpus
+Sequential: Apply merge rules and updating corpus
 
-## Parallelism: Chunk boundary checks so that no pair is missed.
+Parallelism: Chunk boundary checks so that no pair is missed.
+
+Current status: Part-1 Training Results
