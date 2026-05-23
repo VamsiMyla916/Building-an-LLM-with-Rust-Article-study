@@ -1,0 +1,27 @@
+name: Compile LaTeX Notes to PDF
+
+# 1. This tells GitHub to run this script every time you push code to the 'main' branch
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    steps:
+      # 2. This grabs your repository's code
+      - name: Set up Git repository
+        uses: actions/checkout@v4
+
+      # 3. This runs the LaTeX compiler on your specific file
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: README.tex
+
+      # 4. This uploads the finished PDF so you can download it
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-notes-pdf
+          path: README.pdf
