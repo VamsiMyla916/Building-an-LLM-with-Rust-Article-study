@@ -3,7 +3,7 @@ name: Compile LaTeX Notes to PDF
 # 1. This tells GitHub to run this script every time you push code to the 'main' branch
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build_latex:
