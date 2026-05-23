@@ -1,8 +1,8 @@
-nname: Compile LaTeX Notes to PDF
+name: Compile LaTeX Notes to PDF
 
 on:
   push:
-    branches: ["main", "master"] # This will cover both just in case!
+    branches: ["main"] # This will cover both just in case!
   workflow_dispatch: # THIS ADDS THE MANUAL RUN BUTTON
 
 jobs:
