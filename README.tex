@@ -1,0 +1,127 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\title{Learnings: Building an LLM from Scratch using Rust}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section\*{Learnings so far from the \href{https://www.tag1.com/how-to/part1-tokenization-building-an-llm-from-scratch-in-rust/}{Building LLM from scratch using Rust}}
+
+Tokenization, building an LLM from scratch using Rust.
+
+\section{Part 1:}
+
+3 things:
+\begin{enumerate}
+\item Converting Text to numbers using Byte Pair Encoding (BPE)
+\item How this step shapes everything the model can and cannot do.
+\item How different vocabulary sizes effect compression, speed and training behaviour.
+\end{enumerate}
+
+Questions that popped up during the study:
+\begin{enumerate}
+\item Tokenizer? $\rightarrow$ Tool used to convert text to numbers
+\item BPE? Algorithms used in the tokenization process
+\item Feste? $\rightarrow$ The LLM name that we are building
+\item Transformer? $\rightarrow$ Deep learning architecture
+\item Shakesphere? $\rightarrow$ Real one? or any name for a tech/software? $\rightarrow$ The Real one! and this model is trained on Shakesphere complete works.
+\end{enumerate}
+
+\subsection{Learning about Transformer}
+
+Question: What exactly is a transformer and difference between transformer and a language model?
+
+Transformer is a deep learning architecture used in the language model. It basically has encoding-decoding structure and works on the ``Attention Mechanism''
+
+\subsection{What is attention mechanism?}
+
+This method finds the relation between multiple words and how are they related with each other in a sentence.
+
+Difference between transformer and a conventional NN: This Transformer is found as a replacement for RNN/CNN. The conventional neural networks process data sequentially which takes a lot of time and storage space where as Transformer model can process large amount of data points parallelly like finding relevance, encoding, decoding etc.
+
+\subsection{More about the transformer model:}
+
+Transformer model holds a large amount of context. Transformer model does paralelly processes parameters like grammar, emotion etc. It has multi-head self attention for finding and understanding relationship between words. It also does positional encoding to maintain the order of words in a sentence.
+
+Example: Ramu goes to temple in his village. In this sentence the word `his'' refers to the person name `Ramu''. This is identified by the model using the self attention mechanism.
+
+\subsection{Applications:}
+
+\subsubsection{Training a customer support chatbot, medical report summaries etc}
+
+\subsection{Benefits:}
+
+\begin{enumerate}
+\item Long range context
+\item Concurrency/Parallelism
+\item Scalability
+\end{enumerate}
+
+Resources: \href{https://youtu.be/lopXj1p6Ewk?si=XnRMJLDPw4PwhJrm}{About Transformers}
+
+\subsection{What are we building?}
+
+\textbf{'Feste' $\rightarrow$ A GPT 2 Style Architecture model built in complete Rust} as in general using Tensorflow/PyTorch for building transofrmer model abstracts away (eliminates or gives a theoretical level idea) math so that we can focus on the architecture. But in Rust it includes low-level memory management, performance, borrow checker on ownership and memory (control over all these things) safety.
+
+\section{Why Tokenization matter?}
+
+\subsection{Considering the following example:}
+
+\begin{itemize}
+\item \texttt{["he", "llo"]} $\rightarrow$ say `he'' represents tokenID 530 and `llo'' tokenID 840 respectively
+\item \texttt{[" he","llo "]} $\rightarrow$ say `he'' represents tokenID 460 and`llo '' tokenID 670 respectively
+\item \texttt{["ol", "leh"]} $\rightarrow$ say `ol'' represents tokenID 91 and `leh'' represents tokenID 133 respectively
+\end{itemize}
+
+Though the memory contains the word ``hello'', it can't reverse the string because of different tokenIDs in each scenario resulting in a mismatch. This is one of the reasons a simple LLM stuggles to perform operations on a string like reversing it. At word level tokenization is not efficient.
+
+\section{Algorithm used for Tokenization by Feste is BPE}
+
+The goal is to convert Text to TokenIDs $\rightarrow$ process neural networks $\rightarrow$ convert those tokenIDs back to text and generate the output.
+
+Instead of using tokenization at the word level we would go to character level where each character is a token.
+
+Byte level $\rightarrow$ 8bit (binary digits) represent exactly 256 values.
+
+English characters use 1 byte each while others use multiple bytes. For example emojis use 4bytes.
+
+Each byte gets it's own tokenID in the file
+
+\section{Implementation Details:}
+
+Starting with 256 entries mapping hex-encoded bytes to IDs (0-255)
+
+During training $\rightarrow$ add entries for each merge
+
+Merge rules stored in a vector for order significance
+
+\section{Example}
+
+Before encoding ``the'' $\rightarrow$ should apply merge1(M1) first for token256 then apply merge50 (M50)
+
+M1 $\rightarrow$ `th'' $\langle 74 \rangle\langle 68 \rangle$ token 256 ...... M50 $\rightarrow$`the'' $\Rightarrow$ token 256+$\langle 65 \rangle$ = token 300
+
+Training process is completely deterministic like count pairs, find frequently occurring pairs, merge them, repeat. This ensures in no randomness.
+
+\section{Training Performance}
+
+Bottleneck: Counting adjacent pairs in the corpus
+
+Instead of single threaded implementation, using Rayon(Rust library) for parallel counting where chunks (chunk1,chunk2...etc) are divided and counted in parallel.
+
+Each thread checks its chunk boundary and count pair between last token and next chunk's first token such that no pairs are missed.
+
+Sequential: Apply merge rules and updating corpus
+
+Parallelism: Chunk boundary checks so that no pair is missed.
+
+Current status: Part-1 Training Results
+
+\end{document}
