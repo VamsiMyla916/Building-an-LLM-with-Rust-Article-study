@@ -21,7 +21,7 @@ jobs:
 
       # 4. This uploads the finished PDF so you can download it
       - name: Upload PDF artifact
-        uses: softprops/action-gh-release
+        uses: actions/upload-artifact@v4
         with:
           name: compiled-notes-pdf
           path: README.pdf
