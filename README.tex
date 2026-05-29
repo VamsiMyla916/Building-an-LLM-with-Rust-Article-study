@@ -1,7 +1,12 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{hyperref}
 \usepackage{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
 \geometry{a4paper, margin=1in}
 
 \title{Learnings: Building an LLM from Scratch using Rust}
@@ -12,7 +17,7 @@
 
 \maketitle
 
-\section\*{Learnings so far from the \href{https://www.tag1.com/how-to/part1-tokenization-building-an-llm-from-scratch-in-rust/}{Building LLM from scratch using Rust}}
+\section*{Learnings so far from the \href{https://www.tag1.com/how-to/part1-tokenization-building-an-llm-from-scratch-in-rust/}{Building LLM from scratch using Rust}}
 
 Tokenization, building an LLM from scratch using Rust.
 
@@ -20,18 +25,18 @@ Tokenization, building an LLM from scratch using Rust.
 
 3 things:
 \begin{enumerate}
-\item Converting Text to numbers using Byte Pair Encoding (BPE)
-\item How this step shapes everything the model can and cannot do.
-\item How different vocabulary sizes effect compression, speed and training behaviour.
+    \item Converting Text to numbers using Byte Pair Encoding (BPE)
+    \item How this step shapes everything the model can and cannot do.
+    \item How different vocabulary sizes effect compression, speed and training behaviour.
 \end{enumerate}
 
 Questions that popped up during the study:
 \begin{enumerate}
-\item Tokenizer? $\rightarrow$ Tool used to convert text to numbers
-\item BPE? Algorithms used in the tokenization process
-\item Feste? $\rightarrow$ The LLM name that we are building
-\item Transformer? $\rightarrow$ Deep learning architecture
-\item Shakesphere? $\rightarrow$ Real one? or any name for a tech/software? $\rightarrow$ The Real one! and this model is trained on Shakesphere complete works.
+    \item Tokenizer? $\rightarrow$ Tool used to convert text to numbers
+    \item BPE? Algorithms used in the tokenization process
+    \item Feste? $\rightarrow$ The LLM name that we are building
+    \item Transformer? $\rightarrow$ Deep learning architecture
+    \item Shakesphere? $\rightarrow$ Real one? or any name for a tech/software? $\rightarrow$ The Real one! and this model is trained on Shakesphere complete works.
 \end{enumerate}
 
 \subsection{Learning about Transformer}
@@ -50,7 +55,7 @@ Difference between transformer and a conventional NN: This Transformer is found 
 
 Transformer model holds a large amount of context. Transformer model does paralelly processes parameters like grammar, emotion etc. It has multi-head self attention for finding and understanding relationship between words. It also does positional encoding to maintain the order of words in a sentence.
 
-Example: Ramu goes to temple in his village. In this sentence the word `his'' refers to the person name `Ramu''. This is identified by the model using the self attention mechanism.
+Example: Ramu goes to temple in his village. In this sentence the word ``his'' refers to the person name ``Ramu''. This is identified by the model using the self attention mechanism.
 
 \subsection{Applications:}
 
@@ -59,25 +64,25 @@ Example: Ramu goes to temple in his village. In this sentence the word `his'' re
 \subsection{Benefits:}
 
 \begin{enumerate}
-\item Long range context
-\item Concurrency/Parallelism
-\item Scalability
+    \item Long range context
+    \item Concurrency/Parallelism
+    \item Scalability
 \end{enumerate}
 
 Resources: \href{https://youtu.be/lopXj1p6Ewk?si=XnRMJLDPw4PwhJrm}{About Transformers}
 
 \subsection{What are we building?}
 
-\textbf{'Feste' $\rightarrow$ A GPT 2 Style Architecture model built in complete Rust} as in general using Tensorflow/PyTorch for building transofrmer model abstracts away (eliminates or gives a theoretical level idea) math so that we can focus on the architecture. But in Rust it includes low-level memory management, performance, borrow checker on ownership and memory (control over all these things) safety.
+\textbf{`Feste' $\rightarrow$ A GPT 2 Style Architecture model built in complete Rust} as in general using Tensorflow/PyTorch for building transofrmer model abstracts away (eliminates or gives a theoretical level idea) math so that we can focus on the architecture. But in Rust it includes low-level memory management, performance, borrow checker on ownership and memory (control over all these things) safety.
 
 \section{Why Tokenization matter?}
 
 \subsection{Considering the following example:}
 
 \begin{itemize}
-\item \texttt{["he", "llo"]} $\rightarrow$ say `he'' represents tokenID 530 and `llo'' tokenID 840 respectively
-\item \texttt{[" he","llo "]} $\rightarrow$ say `he'' represents tokenID 460 and`llo '' tokenID 670 respectively
-\item \texttt{["ol", "leh"]} $\rightarrow$ say `ol'' represents tokenID 91 and `leh'' represents tokenID 133 respectively
+    \item \texttt{["he", "llo"]} $\rightarrow$ say ``he'' represents tokenID 530 and ``llo'' tokenID 840 respectively
+    \item \texttt{[" he", "llo "]} $\rightarrow$ say `` he'' represents tokenID 460 and ``llo '' tokenID 670 respectively
+    \item \texttt{["ol", "leh"]} $\rightarrow$ say ``ol'' represents tokenID 91 and ``leh'' represents tokenID 133 respectively
 \end{itemize}
 
 Though the memory contains the word ``hello'', it can't reverse the string because of different tokenIDs in each scenario resulting in a mismatch. This is one of the reasons a simple LLM stuggles to perform operations on a string like reversing it. At word level tokenization is not efficient.
@@ -94,6 +99,59 @@ English characters use 1 byte each while others use multiple bytes. For example 
 
 Each byte gets it's own tokenID in the file
 
+\href{https://youtu.be/4pcXW7l-IKU?si=4UmJrN4x1KVtblxB}{Why 256?}
+
+\subsection{BPE Assigning}
+
+\begin{longtable}{llc}
+\toprule
+\textbf{Character} & \textbf{Byte} & \textbf{Token ID} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Character} & \textbf{Byte} & \textbf{Token ID} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+A & 65 & 530 \\
+B & 66 & 870 \\
+C & 67 & 754 \\
+D & 68 & 214 \\
+E & 69 & 125 \\
+F & 70 & 859 \\
+G & 71 & 381 \\
+H & 72 & 350 \\
+I & 73 & 328 \\
+J & 74 & 242 \\
+K & 75 & 854 \\
+L & 76 & 204 \\
+M & 77 & 792 \\
+N & 78 & 858 \\
+O & 79 & 658 \\
+P & 80 & 189 \\
+Q & 81 & 704 \\
+R & 82 & 532 \\
+S & 83 & 132 \\
+T & 84 & 130 \\
+U & 85 & 195 \\
+V & 86 & 323 \\
+W & 87 & 338 \\
+X & 88 & 617 \\
+Y & 89 & 716 \\
+Z & 90 & 127 \\
+\end{longtable}
+
+\subsection{Iteratively merges the most frequent adjacent tokens to new tokens}
+
+Example: ``th'' is frequently repeated and ``t'' and ``h'' has individual tokens assigned initially. Since they are a frequently repeated pair they are merged together and gets asigned with a single new token say 344.
+
+Common words end up with own tokens whereas rare words break down into familiar byte sequences that tokenizer seen in other context.
+
+Smaller vocabulary $\rightarrow$ fragmentation building words from small pieces. Larger vocabulary $\rightarrow$ more to find meaning if trained well enough and identify conceptual relation with other words that are generated next
+
 \section{Implementation Details:}
 
 Starting with 256 entries mapping hex-encoded bytes to IDs (0-255)
@@ -106,7 +164,7 @@ Merge rules stored in a vector for order significance
 
 Before encoding ``the'' $\rightarrow$ should apply merge1(M1) first for token256 then apply merge50 (M50)
 
-M1 $\rightarrow$ `th'' $\langle 74 \rangle\langle 68 \rangle$ token 256 ...... M50 $\rightarrow$`the'' $\Rightarrow$ token 256+$\langle 65 \rangle$ = token 300
+M1 $\rightarrow$ ``th'' $\langle 74 \rangle\langle 68 \rangle$ token 256 \dots M50 $\rightarrow$ ``the'' $\Rightarrow$ token 256 + $\langle 65 \rangle$ = token 300
 
 Training process is completely deterministic like count pairs, find frequently occurring pairs, merge them, repeat. This ensures in no randomness.
 
@@ -122,6 +180,75 @@ Sequential: Apply merge rules and updating corpus
 
 Parallelism: Chunk boundary checks so that no pair is missed.
 
-Current status: Part-1 Training Results
+\section{Parallelization using Rayon (Rust lib)}
+
+\subsection{Parallel Processing Boundary Check Diagram}
+
+Below is a diagram illustrating how separate threads process distinct text chunks in parallel. The crucial step highlighted is the ``Boundary Check,'' where Thread 1 looks at its last formed token and Thread 2's first formed token to identify pairs that might span across the chunk break (preventing missed merges like pre-existing ``th'' or ``the'' tokens).
+
+thread 1 $\rightarrow$ \texttt{[["t","h"] ["e","a","d"]]} , thread 2 $\rightarrow$ \texttt{[["u","s"] ["e","d","t"]]} \dots thread n \texttt{[[][]]}
+
+Basically this is a parallel processing method for multi-thread operations where each thread checks the chunk boundary to see if it is missing any pairs to merge like ``th'' and ``the'' (from thread 1) and ``us'', ``use'', ``used'' (from thread 2)
+
+This multi-thread operation helps in speeing up the process. Each thread checks the chunk boundaries so that no pair gets missed out. We only focus on the bottleneck which is counting pairs and not on speeding up the max performance like applying merges or updating the corpus as optimizing them complicates the code.
+
+\section{Encoding}
+
+Consider the following example:
+
+Vocabulary: ``To be''
+
+Their hex values are as follows
+\begin{table}[h]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Character} & \textbf{Hex Value} \\
+\midrule
+T & 54 \\
+o & 6f \\
+Space & 20 \\
+b & 62 \\
+e & 65 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Now the list is : \texttt{[$\langle 54 \rangle$, $\langle 6f \rangle$, $\langle 20 \rangle$, $\langle 62 \rangle$, $\langle 65 \rangle$]}
+
+Say the model learned 3 merges in the order:
+
+M1: $\langle 6f \rangle\langle 20 \rangle$ $\rightarrow$ ``o '' $\rightarrow$ Token 256
+
+M2: $\langle 54 \rangle\langle 6f \rangle$ $\rightarrow$ ``To'' $\rightarrow$ Token 257
+
+M3: Token 256 + $\langle 62 \rangle$ $\rightarrow$ ``o b'' $\rightarrow$ 258
+
+Encoding follows a sequential order while applying these merge rules:
+
+From M1, the list will be updated from \texttt{[$\langle 54 \rangle$, $\langle 6f \rangle$, $\langle 20 \rangle$, $\langle 62 \rangle$, $\langle 65 \rangle$]} to \texttt{[$\langle 54 \rangle$, 256, $\langle 62 \rangle$, $\langle 65 \rangle$]}
+
+From M2, the list will remain same because in this case, it looks for applying the M2 to the updated list, but it can't find the hex value $\langle 6f \rangle$ as it was updated to token 256 during the M1.
+
+From M3, it looks for Token 256 and hex $\langle 62 \rangle$ and both exist in the newly updated list. So this rule will be applied to the list and now it becomes \texttt{[$\langle 54 \rangle$, 258, $\langle 65 \rangle$]}
+
+To summarize the encoding process, basically the model learns some merge rules and apply them sequentially to a list. If merge rules aligns with that list then the list is updated, if a merge rule could not find the token/hex value to apply the merge then the list won't get updated and will remain the same and it will skip to the next merge rule.
+
+\section{Decoding}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcll}
+\toprule
+\textbf{Token} & \textbf{Map to} & \textbf{Hex Byte} & \textbf{Expected Output} \\
+\midrule
+$\langle 54 \rangle$ & $\rightarrow$ & $\langle 54 \rangle$ & T \\
+258 & $\rightarrow$ & $\langle 6f \rangle\langle 20 \rangle\langle 62 \rangle$ & o b \\
+$\langle 65 \rangle$ & $\rightarrow$ & $\langle 65 \rangle$ & e \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+After mapping the token IDs back to their corresponding hex byte values, join all those hex bytes together $\langle 54 \rangle\langle 6f \rangle\langle 20 \rangle\langle 62 \rangle\langle 65 \rangle$ and parse them back to the text (``To be'') as per the UTF-8 standards.
 
 \end{document}
