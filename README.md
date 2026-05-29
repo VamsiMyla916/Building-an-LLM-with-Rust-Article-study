@@ -78,9 +78,46 @@ English characters use 1 byte each while others use multiple bytes. For example 
 
 Each byte gets it's own tokenID in the file
 
-![image1 of BPE math](image.png)
-![image2 of BPE math](image-1.png)
-![image3 of BPE math](image-2.png)
+[Why 256?](https://youtu.be/4pcXW7l-IKU?si=4UmJrN4x1KVtblxB)
+
+### BPE Assigning
+
+| Character | Byte | Token ID |
+| :-------- | :--- | :------- |
+| A         | 65   | 530      |
+| B         | 66   | 870      |
+| C         | 67   | 754      |
+| D         | 68   | 214      |
+| E         | 69   | 125      |
+| F         | 70   | 859      |
+| G         | 71   | 381      |
+| H         | 72   | 350      |
+| I         | 73   | 328      |
+| J         | 74   | 242      |
+| K         | 75   | 854      |
+| L         | 76   | 204      |
+| M         | 77   | 792      |
+| N         | 78   | 858      |
+| O         | 79   | 658      |
+| P         | 80   | 189      |
+| Q         | 81   | 704      |
+| R         | 82   | 532      |
+| S         | 83   | 132      |
+| T         | 84   | 130      |
+| U         | 85   | 195      |
+| V         | 86   | 323      |
+| W         | 87   | 338      |
+| X         | 88   | 617      |
+| Y         | 89   | 716      |
+| Z         | 90   | 127      |
+
+### Iteratively merges the most frequent adjacent tokens to new tokens
+
+Example: "th" is frequently repeated and "t" and "h" has individual tokens assigned initially. Since they are a frequently repeated pair they are merged together and gets asigned with a single new token say 344.
+
+Common words end up with own tokens whereas rare words break down into familiar byte sequences that tokenizer seen in other context.
+
+Smaller vocabulary -> fragmentation building words from small pieces. Larger vocabulary -> more to find meaning if trained well enough and identify conceptual relation with other words that are generated next
 
 # Implementation Details:
 
