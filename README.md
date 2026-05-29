@@ -147,4 +147,59 @@ Sequential: Apply merge rules and updating corpus
 
 Parallelism: Chunk boundary checks so that no pair is missed.
 
-Current status: Part-1 Training Results
+# Parallelization using Rayon (Rust lib)
+
+### Parallel Processing Boundary Check Diagram
+
+Below is a diagram illustrating how separate threads process distinct text chunks in parallel. The crucial step highlighted is the "Boundary Check," where Thread 1 looks at its last formed token and Thread 2's first formed token to identify pairs that might span across the chunk break (preventing missed merges like pre-existing "th" or "the" tokens).
+
+thread 1 ->[["t","h"] ["e","a","d"]] , thread 2 ->[["u","s"] ["e","d","t"]] .... thread n [[][]]
+
+Basically this is a parallel processing method for multi-thread operations where each thread checks the chunk boundary to see if it is missing any pairs to merge like "th" and "the" (from thread 1) and "us", "use", "used" (from thread 2)
+
+This multi-thread operation helps in speeing up the process. Each thread checks the chunk boundaries so that no pair gets missed out. We only focus on the bottleneck which is counting pairs and not on speeding up the max performance like applying merges or updating the corpus as optimizing them complicates the code.
+
+# Encoding
+
+Consider the following example:
+
+Vocabulary: "To be"
+
+Their hex values are as follows
+| Character | Hex Value |
+| :--- | :--- |
+| T | 54 |
+| o | 6f |
+| Space | 20 |
+| b | 62 |
+| e | 65 |
+
+Now the list is : [<54>,<6f>,<20>,<62>,<65>]
+
+Say the model learned 3 merges in the order:
+
+M1: <6f><20> -> "o " -> Token 256
+
+M2: <54><6f> -> "To" -> Token 257
+
+M3: Token 256 + <62> -> "o b" -> 258
+
+Encoding follows a sequential order while applying these merge rules:
+
+From M1, the list will be updated from [<54>,<6f>,<20>,<62>,<65>] to [<54>,256,<62>,<65>]
+
+From M2, the list will remain same because in this case, it looks for applying the M2 to the updated list, but it can't find the hex value <6f> as it was updated to token 256 during the M1.
+
+From M3, it looks for Token 256 and hex <62> and both exist in the newly updated list. So this rule will be applied to the list and now it becomes [<54>,258,<65>]
+
+To summarize the encoding process, basically the model learns some merge rules and apply them sequentially to a list. If merge rules aligns with that list then the list is updated, if a merge rule could not find the token/hex value to apply the merge then the list won't get updated and will remain the same and it will skip to the next merge rule.
+
+# Decoding
+
+| Token | Map to | Hex Byte     | Expected Output |
+| :---- | :----: | :----------- | :-------------- |
+| <54>  |   ->   | <54>         | T               |
+| 258   |   ->   | <6f><20><62> | o b             |
+| <65>  |   ->   | <65>         | e               |
+
+After mapping the token IDs back to their corresponding hex byte values, join all those hex bytes together <54><6f><20><62><65> and parse them back to the text ("To be") as per the UTF-8 standards.
