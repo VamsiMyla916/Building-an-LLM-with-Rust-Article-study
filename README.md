@@ -2,7 +2,7 @@
 
 Tokenization, building an LLM from scratch using Rust.
 
-# Part 1:
+# Part 1 TOKENIZER:
 
 3 things:
 
@@ -203,3 +203,132 @@ To summarize the encoding process, basically the model learns some merge rules a
 | <65>  |   ->   | <65>         | e               |
 
 After mapping the token IDs back to their corresponding hex byte values, join all those hex bytes together <54><6f><20><62><65> and parse them back to the text ("To be") as per the UTF-8 standards.
+
+Important Note: For this educational model, the chunks are processed independently and the "Loss in compression efficiency is neglegible". BPE follows strict guidelines to prevent breaking boundary between chunks (Ex: "Formatting" might split into "Format" "ting")
+
+# Training Results:
+
+- In this section, the article mentioned about a model that can train 5 different tokenizers using vocabulary sizes of 256,512,1024,1536,20534 respectively.
+
+- Question: How to run this model?
+- Production models use 20534 tokens (GPT2+GPT3 -> 50257 tokens)
+
+- Compression Ration: How many types of input each token represents on average.
+
+- CR = Total Bytes of text/ Total Tokens used
+
+- If CR is 1.96x then one token represent 1.96 bytes.
+- Shortersequences and smaller vocabulary means faster processing and less data processing during training and inference.
+
+- Uses less memory
+
+- Embedding matrix -> digital dictionary to hold token values where each row represents a token and token is represented by decimal numbers called embedding parameters. These decimal values identify the semantic relationship between two tokens.
+
+### Token Embedding Matrix (Parameter Lookup Table)
+
+Once tokens are assigned their integer IDs, they are mapped to high-dimensional vectors. These floating-point numbers are the actual parameters (weights) the model learns during training to understand relationships between tokens.
+
+| Token ID  | Token String      | $d_0$   | $d_1$   | $d_2$   | $d_3$   | $\dots$ | $d_{511}$ |
+| :-------- | :---------------- | :------ | :------ | :------ | :------ | :------ | :-------- |
+| **256**   | `th`              | 0.1245  | -0.4512 | 0.8821  | -0.0192 | $\dots$ | -0.0034   |
+| **257**   | `To`              | -0.9921 | 0.0154  | 0.3409  | 0.1125  | $\dots$ | 0.7710    |
+| **258**   | `o b`             | 0.3310  | -0.2100 | -0.5541 | 0.9982  | $\dots$ | 0.1093    |
+| **300**   | `the`             | 0.5501  | 0.2219  | -0.1123 | -0.7761 | $\dots$ | -0.4428   |
+| **...**   | ...               | ...     | ...     | ...     | ...     | $\dots$ | ...       |
+| **50256** | `<\|endoftext\|>` | -0.1102 | 0.8842  | 0.0012  | -0.3341 | $\dots$ | 0.0001    |
+
+**Note on the dimensions:** \* **Rows:** Equal to the Vocabulary Size (e.g., 50,257 rows for GPT-2).
+
+- **Columns ($d_n$):** The embedding dimension or hidden size of the model (e.g., 512, 768, or 4096).
+- For vocabulary 256 say each token might have 768 parameters then the total embedded parameters will be 256 \* 768 = 196608
+- Better compression requires checking of more merge rules.
+
+## Comparision Table to identify the Compression Ratio and Training requirements across different vocabulary sizes.
+
+| Vocabulary Size | Encoded Length (tokens) | Compression Ratio | Training Time (s) | Encoding Time (s) |
+| :-------------- | :---------------------- | :---------------- | :---------------- | :---------------- |
+| 256             | 5,422,721               | 1.00x             | 0.00              | 0.14              |
+| 512             | 2,772,080               | 1.96x             | 25.54             | 2.04              |
+| 1024            | 2,189,778               | 2.48x             | 77.45             | 4.88              |
+| 1536            | 1,952,470               | 2.78x             | 142.51            | 7.46              |
+| 20,534          | 1,481,106               | 3.66x             | 286.34            | 242.50            |
+
+- Higher the Compression Ration, better the output. But Encoding cost will be higher and also requires checking of more merge rules.
+
+| Vocabulary Size | Base Vocabulary | Additional Merges | Total Merges / Breakdown                     |
+| :-------------- | :-------------- | :---------------- | :------------------------------------------- |
+| **256**         | 256             | 0                 | $256 \text{ (Base)} + 0 \text{ merges}$      |
+| **512**         | 256             | 256               | $256 \text{ (Base)} + 256 \text{ merges}$    |
+| **1024**        | 256             | 768               | $256 \text{ (Base)} + 768 \text{ merges}$    |
+| **1536**        | 256             | 1280              | $256 \text{ (Base)} + 1280 \text{ merges}$   |
+| **20,534**      | 256             | 20,278            | $256 \text{ (Base)} + 20,278 \text{ merges}$ |
+
+- Phrase-level compression happens for few phrases at 20534 size vocabulary.
+
+# Trade-offs
+
+- Compression Ration increases with increase in vocabulary size but with diminishing returns.
+- My Assumption based on learnings so far: Reason could be since the packing rate is happening for frequently repeating phrases/letters/words and those that doesn't repease often remain the same.
+- Training time increases almost linearly with vocabulary size until sampling optimization kicks in.
+
+## Data Scarcity problem
+
+- If we choose a vocabulary size say 1536, but the dataset os too small, then the model forces to remember small words which does not repeat often or appears only once.
+- This also leads to embedding collapse and treat arare words as random noise.
+
+## Solution: Choosing the right vocabulary
+
+- Choosing the right vocabulary size would fix this problem.
+- Smaller vocabularies result in larger sequences which makes training slower.
+- But in the Trade-offs sections, as per the visuals mentioned in the article, the training times increases with vocabulary size (almost linearly) if sampling optimization is not implemented.
+
+# What we chose not to do?
+
+- Choosing clarity over performance.
+- Understanding how tokenization works>>>>> than trying for extra speed.
+- Some optimizations by production tokenizers aren't really necessary.
+
+# Encoding Performance
+
+- Merging follows sequence.
+- Merging increases with Vocabulary size.
+- Production tokenizers use trie-based lookup or cache encoding to speed up this process.
+- It is mentioned in the article that for now the sequence mergingn is enough in terms of learning. So we can see what is happening at each step.
+
+# String representation
+
+- Tokens are stored in hex values <66>,<6f>...etc
+- For production tokenizers, they use integer values and stores merges as thress numbers -> (token_a,token_b)=new_token.
+  ### Using Strings (Token Representation)
+
+| Pros                                                            | Cons                                    |
+| :-------------------------------------------------------------- | :-------------------------------------- |
+| • Highly debuggable                                             | • Wastes memory / high storage overhead |
+| • Explicitly clear (can see exactly what each token represents) | • Requires parsing overhead             |
+
+## Vocabulary management
+
+- For learning :- Keep every merge including off-patterns (outliers).
+- Sampling optimization is good enough for learning purposes.
+- For production level: Prunes low-frequency merges and sampling optimization is not a good option.
+- For plain English text, this approach of encoding-decoding following UTF-8 standards is perfect and optimized as every valid UTF-8 sequence encodes and decodes perfectly.
+- However, this approach is less optimized for Non-English characters.
+
+# Why these choices?
+
+- There are libraries like "Tokenizer" and "Tikloren_rs" in rust that are production-grade and addresses the issues that popped up in the learning process.
+- The reason for not using them is because the goal here is understanding and learning, not optimizng.
+- To implement and to show every step explicitly.
+- Can trace exactly what happens during training and decoding.
+- Understanding why encoding increases with vocabulary size.
+- Understanding token representation of hex values.
+- These insights are more valuable than 10x speedup.
+- For learning, Feste works perfectly.
+
+# PART 2: TENSOR OPERATIONS
+
+## PURPOSE: To build a library in Rust to power up the Feste Transformers, not for speed optimization but to understand and be clear about what is happening underneath.
+
+- Tensor operation is the mathematical heart of the model.
+- It explains the operations happening inside the transformer starting from Attention to Layer Normalization and simplifies to basic computations on multi-dimensional arrays of numbers.
+- This part of the article explains how transformers are elegantly constructed systems shaped by how math works on real computers.
