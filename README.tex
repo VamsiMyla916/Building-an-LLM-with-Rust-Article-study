@@ -17,99 +17,72 @@
 
 \maketitle
 
-\section*{Learnings so far from the \href{https://www.tag1.com/how-to/part1-tokenization-building-an-llm-from-scratch-in-rust/}{Building LLM from scratch using Rust}}
+\section*{Introduction}
+These notes capture the primary insights and structural concepts learned while studying the implementation of a language model from scratch using the Rust programming language \cite{README.md, Rust_ML__Building_an_LLM_using_Rust_.pdf}.
 
-Tokenization, building an LLM from scratch using Rust.
+\section{Part 1: The Tokenizer}
 
-\section{Part 1:}
-
-3 things:
+The tokenization phase establishes the groundwork for the language model by addressing three core dimensions:
 \begin{enumerate}
-    \item Converting Text to numbers using Byte Pair Encoding (BPE)
-    \item How this step shapes everything the model can and cannot do.
-    \item How different vocabulary sizes effect compression, speed and training behaviour.
+    \item Converting text to numbers using Byte Pair Encoding (BPE).
+    \item Understanding how this step directly shapes everything the model can and cannot do.
+    \item Analyzing how different vocabulary sizes affect compression, processing speed, and training behavior.
 \end{enumerate}
 
-Questions that popped up during the study:
+\subsection{Core Concepts \& Definitions}
 \begin{enumerate}
-    \item Tokenizer? $\rightarrow$ Tool used to convert text to numbers
-    \item BPE? Algorithms used in the tokenization process
-    \item Feste? $\rightarrow$ The LLM name that we are building
-    \item Transformer? $\rightarrow$ Deep learning architecture
-    \item Shakesphere? $\rightarrow$ Real one? or any name for a tech/software? $\rightarrow$ The Real one! and this model is trained on Shakesphere complete works.
+    \item \textbf{Tokenizer:} A specialized tool used to convert human-readable text into numerical tokens.
+    \item \textbf{BPE:} The specific subword algorithm used during the tokenization process.
+    \item \textbf{Feste:} The name of the GPT-2 style language model being constructed.
+    \item \textbf{Transformer:} The foundational deep learning architecture underpinning the language model.
+    \item \textbf{Shakespeare:} The dataset source. The model is actively trained on the complete works of William Shakespeare.
 \end{enumerate}
 
-\subsection{Learning about Transformer}
+\subsection{Learning about the Transformer Architecture}
+A transformer is a deep learning architecture integrated into a language model. It relies on an encoding-decoding structure and is driven by the \emph{Attention Mechanism}.
 
-Question: What exactly is a transformer and difference between transformer and a language model?
+\subsubsection{What is the Attention Mechanism?}
+This method determines the mathematical relationships between multiple words within a sentence, determining how they correlate with one another. 
 
-Transformer is a deep learning architecture used in the language model. It basically has encoding-decoding structure and works on the ``Attention Mechanism''
+Unlike conventional neural networks (such as RNNs or CNNs) which process data sequentially---incurring substantial time and storage penalties---the transformer model processes massive strings of data points in parallel. This parallelism accelerates operations like relevance mapping, encoding, and decoding.
 
-\subsection{What is attention mechanism?}
-
-This method finds the relation between multiple words and how are they related with each other in a sentence.
-
-Difference between transformer and a conventional NN: This Transformer is found as a replacement for RNN/CNN. The conventional neural networks process data sequentially which takes a lot of time and storage space where as Transformer model can process large amount of data points parallelly like finding relevance, encoding, decoding etc.
-
-\subsection{More about the transformer model:}
-
-Transformer model holds a large amount of context. Transformer model does paralelly processes parameters like grammar, emotion etc. It has multi-head self attention for finding and understanding relationship between words. It also does positional encoding to maintain the order of words in a sentence.
-
-Example: Ramu goes to temple in his village. In this sentence the word ``his'' refers to the person name ``Ramu''. This is identified by the model using the self attention mechanism.
-
-\subsection{Applications:}
-
-\subsubsection{Training a customer support chatbot, medical report summaries etc}
-
-\subsection{Benefits:}
-
-\begin{enumerate}
-    \item Long range context
-    \item Concurrency/Parallelism
-    \item Scalability
-\end{enumerate}
-
-Resources: \href{https://youtu.be/lopXj1p6Ewk?si=XnRMJLDPw4PwhJrm}{About Transformers}
-
-\subsection{What are we building?}
-
-\textbf{`Feste' $\rightarrow$ A GPT 2 Style Architecture model built in complete Rust} as in general using Tensorflow/PyTorch for building transofrmer model abstracts away (eliminates or gives a theoretical level idea) math so that we can focus on the architecture. But in Rust it includes low-level memory management, performance, borrow checker on ownership and memory (control over all these things) safety.
-
-\section{Why Tokenization matter?}
-
-\subsection{Considering the following example:}
-
+\subsubsection{Key Features of the Model}
 \begin{itemize}
-    \item \texttt{["he", "llo"]} $\rightarrow$ say ``he'' represents tokenID 530 and ``llo'' tokenID 840 respectively
-    \item \texttt{[" he", "llo "]} $\rightarrow$ say `` he'' represents tokenID 460 and ``llo '' tokenID 670 respectively
-    \item \texttt{["ol", "leh"]} $\rightarrow$ say ``ol'' represents tokenID 91 and ``leh'' represents tokenID 133 respectively
+    \item \textbf{Long-Range Context:} The model can maintain contextual relevance across long sequences.
+    \item \textbf{Parallel Feature Processing:} Parameters like grammar, emotional tone, and syntax are processed concurrently.
+    \item \textbf{Multi-Head Self-Attention:} Designed for uncovering and maintaining semantic relationships between disparate words.
+    \item \textbf{Positional Encoding:} Injects structural ordering metadata into word vectors to preserve word sequences.
 \end{itemize}
+\emph{Example:} In the sentence \emph{``Ramu goes to temple in his village,''} the word \emph{``his''} refers to the name \emph{``Ramu''}. The model identifies this connection using its self-attention layer.
 
-Though the memory contains the word ``hello'', it can't reverse the string because of different tokenIDs in each scenario resulting in a mismatch. This is one of the reasons a simple LLM stuggles to perform operations on a string like reversing it. At word level tokenization is not efficient.
+\subsubsection{Applications \& Benefits}
+Transformers excel in specific real-world tasks such as training customer support chatbots and generating condensed medical report summaries. Their primary architectural benefits are long-range context handling, execution concurrency, and scalability.
 
-\section{Algorithm used for Tokenization by Feste is BPE}
+\subsection{What Are We Building?}
+The model, \textbf{Feste}, utilizes a GPT-2 style architecture built entirely in native Rust. While frameworks like TensorFlow or PyTorch abstract away the underlying mathematics to let developers focus strictly on higher-level architecture, using Rust introduces low-level control over memory management, performance optimization, absolute type safety, and strict ownership validation via the borrow checker.
 
-The goal is to convert Text to TokenIDs $\rightarrow$ process neural networks $\rightarrow$ convert those tokenIDs back to text and generate the output.
+\section{Why Tokenization Matters}
+The boundaries of tokenization dictate what an LLM can ultimately achieve. Consider the following tokenization behavior over fragmented strings of the word \emph{``hello''}:
+\begin{itemize}
+    \item \texttt{["he", "llo"]} $\rightarrow$ mapped to Token IDs: 530 and 840 respectively.
+    \item \texttt{[" he", "llo "]} $\rightarrow$ mapped to Token IDs: 460 and 670 respectively.
+    \item \texttt{["ol", "leh"]} $\rightarrow$ mapped to Token IDs: 91 and 133 respectively.
+\end{itemize}
+Even though the underlying string represents the same word, the resulting Token IDs are completely disjointed. Because these variation boundaries prevent the neural network from effortlessly reversing or manipulating strings at a character level, word-level or unoptimized subword tokenization remains highly inefficient.
 
-Instead of using tokenization at the word level we would go to character level where each character is a token.
+\section{The Byte Pair Encoding (BPE) Algorithm}
+To resolve the limits of word-level tokenization, Feste defaults to a character/byte level where base tokens represent raw byte definitions. An 8-bit binary digit represents exactly 256 unique baseline values. Standard English characters consume 1 byte each, whereas complex items like emojis require up to 4 bytes. Each unique byte receives its own dedicated Token ID.
 
-Byte level $\rightarrow$ 8bit (binary digits) represent exactly 256 values.
+\subsection{BPE Token Assignment}
+The following table illustrates the baseline mapping of raw character bytes to specialized Token IDs:
 
-English characters use 1 byte each while others use multiple bytes. For example emojis use 4bytes.
-
-Each byte gets it's own tokenID in the file
-
-\href{https://youtu.be/4pcXW7l-IKU?si=4UmJrN4x1KVtblxB}{Why 256?}
-
-\subsection{BPE Assigning}
-
-\begin{longtable}{llc}
+\begin{longtable}{ccc}
 \toprule
-\textbf{Character} & \textbf{Byte} & \textbf{Token ID} \\
+\textbf{Character} & \textbf{Byte Value} & \textbf{Initial Token ID} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Character} & \textbf{Byte} & \textbf{Token ID} \\
+\textbf{Character} & \textbf{Byte Value} & \textbf{Initial Token ID} \\
 \midrule
 \endhead
 \bottomrule
@@ -144,63 +117,42 @@ Y & 89 & 716 \\
 Z & 90 & 127 \\
 \end{longtable}
 
-\subsection{Iteratively merges the most frequent adjacent tokens to new tokens}
+The BPE algorithm works by iteratively merging the most frequent adjacent tokens into entirely new, single tokens.
+\\\emph{Example:} If the pair \texttt{"th"} repeats frequently across a text corpus, its individual character tokens (\texttt{'t'} and \texttt{'h'}) are systematically combined into a single new subword token, such as \texttt{344}. 
 
-Example: ``th'' is frequently repeated and ``t'' and ``h'' has individual tokens assigned initially. Since they are a frequently repeated pair they are merged together and gets asigned with a single new token say 344.
+Consequently, common structural words consolidate into their own unique tokens, while rare terms break down into familiar base byte sequences that the tokenizer has observed across other training environments.
+\begin{itemize}
+    \item \textbf{Smaller Vocabularies:} Increase sequence length and fragmentation, forcing the model to construct phrases from tiny components.
+    \item \textbf{Larger Vocabularies:} Preserve meaning per token and allow the network to discover conceptual relationships between sequential words more effectively, provided training is sufficient.
+\end{itemize}
 
-Common words end up with own tokens whereas rare words break down into familiar byte sequences that tokenizer seen in other context.
+\section{Implementation Details}
+The system begins with 256 unique entries mapping hex-encoded bytes to numerical IDs ($0$--$255$). During training, new token values are dynamically appended to the lexicon for every unique merge rule. These rules are maintained in an ordered vector, as execution order dictates application significance.
 
-Smaller vocabulary $\rightarrow$ fragmentation building words from small pieces. Larger vocabulary $\rightarrow$ more to find meaning if trained well enough and identify conceptual relation with other words that are generated next
+\subsection{Prefix Merge Ordering Example}
+Before encoding a word like \texttt{"the"}, the tokenizer must step through its merge rules sequentially. For instance, it applies merge rule 1 ($M_1$) first to generate token \texttt{256} for the pair \texttt{"th"} ($\langle 74 \rangle\langle 68 \rangle$), before eventually applying merge rule 50 ($M_{50}$) which fuses token \texttt{256} with byte $\langle 65 \rangle$ (\texttt{'e'}) to generate the complete token \texttt{300}. 
 
-\section{Implementation Details:}
+This training pipeline is fully deterministic: it counts pairs, isolates the highest frequency pair, updates the corpus, and repeats without stochastic randomness.
 
-Starting with 256 entries mapping hex-encoded bytes to IDs (0-255)
+\section{Training Performance \& Parallelization}
+The computational bottleneck of BPE lies in counting adjacent token pairs across the training corpus. Instead of a single-threaded architecture, Feste implements the \texttt{Rayon} data-parallelism library in Rust to shard text data across multiple execution threads simultaneously.
 
-During training $\rightarrow$ add entries for each merge
+\subsection{Parallel Chunk Boundary Constraints}
+To prevent missing token merges that cross the split points between independent threads, a explicit \textbf{Boundary Check} is performed:
+\begin{center}
+    \texttt{Thread 1} $\rightarrow$ \texttt{[["t","h"] ["e","a","d"]]} \quad$\Longleftrightarrow$\quad \texttt{Thread 2} $\rightarrow$ \texttt{[["u","s"] ["e","d","t"]]}
+\end{center}
+Each thread checks its chunk boundary against the starting token of the adjacent chunk. This ensures spanning pairs (such as a split \texttt{"th"}, \texttt{"the"}, \texttt{"us"}, or \texttt{"used"}) are properly preserved and counted. Parallelization is purposefully restricted to pair-counting; executing the merges and updating the internal corpus is kept sequential to prioritize code legibility over over-engineered complexity.
 
-Merge rules stored in a vector for order significance
+For this educational model, chunks are processed independently; the loss in compression efficiency remains negligible, and BPE enforces strict rules against invalid boundary fracturing.
 
-\section{Example}
+\section{Encoding and Decoding Walkthrough}
+Let us trace an explicit encoding run for the sequence \texttt{"To be"} based on the following hexadecimal character map:
 
-Before encoding ``the'' $\rightarrow$ should apply merge1(M1) first for token256 then apply merge50 (M50)
-
-M1 $\rightarrow$ ``th'' $\langle 74 \rangle\langle 68 \rangle$ token 256 \dots M50 $\rightarrow$ ``the'' $\Rightarrow$ token 256 + $\langle 65 \rangle$ = token 300
-
-Training process is completely deterministic like count pairs, find frequently occurring pairs, merge them, repeat. This ensures in no randomness.
-
-\section{Training Performance}
-
-Bottleneck: Counting adjacent pairs in the corpus
-
-Instead of single threaded implementation, using Rayon(Rust library) for parallel counting where chunks (chunk1,chunk2...etc) are divided and counted in parallel.
-
-Each thread checks its chunk boundary and count pair between last token and next chunk's first token such that no pairs are missed.
-
-Sequential: Apply merge rules and updating corpus
-
-Parallelism: Chunk boundary checks so that no pair is missed.
-
-\section{Parallelization using Rayon (Rust lib)}
-
-\subsection{Parallel Processing Boundary Check Diagram}
-
-Below is a diagram illustrating how separate threads process distinct text chunks in parallel. The crucial step highlighted is the ``Boundary Check,'' where Thread 1 looks at its last formed token and Thread 2's first formed token to identify pairs that might span across the chunk break (preventing missed merges like pre-existing ``th'' or ``the'' tokens).
-
-thread 1 $\rightarrow$ \texttt{[["t","h"] ["e","a","d"]]} , thread 2 $\rightarrow$ \texttt{[["u","s"] ["e","d","t"]]} \dots thread n \texttt{[[][]]}
-
-Basically this is a parallel processing method for multi-thread operations where each thread checks the chunk boundary to see if it is missing any pairs to merge like ``th'' and ``the'' (from thread 1) and ``us'', ``use'', ``used'' (from thread 2)
-
-This multi-thread operation helps in speeing up the process. Each thread checks the chunk boundaries so that no pair gets missed out. We only focus on the bottleneck which is counting pairs and not on speeding up the max performance like applying merges or updating the corpus as optimizing them complicates the code.
-
-\section{Encoding}
-
-Consider the following example:
-
-Vocabulary: ``To be''
-
-Their hex values are as follows
 \begin{table}[h]
 \centering
+\caption{Hexadecimal Character Values}
+\label{tab:hex_values}
 \begin{tabular}{ll}
 \toprule
 \textbf{Character} & \textbf{Hex Value} \\
@@ -214,33 +166,29 @@ e & 65 \\
 \end{tabular}
 \end{table}
 
-Now the list is : \texttt{[$\langle 54 \rangle$, $\langle 6f \rangle$, $\langle 20 \rangle$, $\langle 62 \rangle$, $\langle 65 \rangle$]}
+The baseline byte list is initialized as: $[\langle 54 \rangle, \langle 6f \rangle, \langle 20 \rangle, \langle 62 \rangle, \langle 65 \rangle]$. Assume the tokenizer has learned three ordered merge rules:
+\begin{itemize}
+    \item \textbf{$M_1$:} $\langle 6f \rangle\langle 20 \rangle \rightarrow \text{"o " } \rightarrow \text{Token } 256$
+    \item \textbf{$M_2$:} $\langle 54 \rangle\langle 6f \rangle \rightarrow \text{"To" } \rightarrow \text{Token } 257$
+    \item \textbf{$M_3$:} $\text{Token } 256 + \langle 62 \rangle \rightarrow \text{"o b" } \rightarrow \text{Token } 258$
+\end{itemize}
 
-Say the model learned 3 merges in the order:
+The tokenizer processes these constraints sequentially:
+\begin{enumerate}
+    \item Applying $M_1$ transforms the original sequence into $[\langle 54 \rangle, 256, \langle 62 \rangle, \langle 65 \rangle]$.
+    \item Applying $M_2$ attempts to find $\langle 54 \rangle\langle 6f \rangle$. Because the byte $\langle 6f \rangle$ was already consumed to create token \texttt{256} during the $M_1$ pass, the rule fails to match and the list remains unchanged.
+    \item Applying $M_3$ scans for token \texttt{256} followed immediately by byte $\langle 62 \rangle$. This matches perfectly, compressing the collection into its final encoded array: $[\langle 54 \rangle, 258, \langle 65 \rangle]$.
+\end{enumerate}
 
-M1: $\langle 6f \rangle\langle 20 \rangle$ $\rightarrow$ ``o '' $\rightarrow$ Token 256
-
-M2: $\langle 54 \rangle\langle 6f \rangle$ $\rightarrow$ ``To'' $\rightarrow$ Token 257
-
-M3: Token 256 + $\langle 62 \rangle$ $\rightarrow$ ``o b'' $\rightarrow$ 258
-
-Encoding follows a sequential order while applying these merge rules:
-
-From M1, the list will be updated from \texttt{[$\langle 54 \rangle$, $\langle 6f \rangle$, $\langle 20 \rangle$, $\langle 62 \rangle$, $\langle 65 \rangle$]} to \texttt{[$\langle 54 \rangle$, 256, $\langle 62 \rangle$, $\langle 65 \rangle$]}
-
-From M2, the list will remain same because in this case, it looks for applying the M2 to the updated list, but it can't find the hex value $\langle 6f \rangle$ as it was updated to token 256 during the M1.
-
-From M3, it looks for Token 256 and hex $\langle 62 \rangle$ and both exist in the newly updated list. So this rule will be applied to the list and now it becomes \texttt{[$\langle 54 \rangle$, 258, $\langle 65 \rangle$]}
-
-To summarize the encoding process, basically the model learns some merge rules and apply them sequentially to a list. If merge rules aligns with that list then the list is updated, if a merge rule could not find the token/hex value to apply the merge then the list won't get updated and will remain the same and it will skip to the next merge rule.
-
-\section{Decoding}
+To reverse this process and decode the stream, tokens are mapped back to their raw hexadecimal values as shown below:
 
 \begin{table}[h]
 \centering
+\caption{Decoding Token Reverse Mapping}
+\label{tab:decoding_map}
 \begin{tabular}{lcll}
 \toprule
-\textbf{Token} & \textbf{Map to} & \textbf{Hex Byte} & \textbf{Expected Output} \\
+\textbf{Token ID} & \textbf{Map Transformation} & \textbf{Hex Byte Code} & \textbf{Expected Output Text} \\
 \midrule
 $\langle 54 \rangle$ & $\rightarrow$ & $\langle 54 \rangle$ & T \\
 258 & $\rightarrow$ & $\langle 6f \rangle\langle 20 \rangle\langle 62 \rangle$ & o b \\
@@ -249,6 +197,113 @@ $\langle 65 \rangle$ & $\rightarrow$ & $\langle 65 \rangle$ & e \\
 \end{tabular}
 \end{table}
 
-After mapping the token IDs back to their corresponding hex byte values, join all those hex bytes together $\langle 54 \rangle\langle 6f \rangle\langle 20 \rangle\langle 62 \rangle\langle 65 \rangle$ and parse them back to the text (``To be'') as per the UTF-8 standards.
+The resulting hex byte chunks are concatenated together to form $\langle 54 \rangle\langle 6f \rangle\langle 20 \rangle\langle 62 \rangle\langle 65 \rangle$, which is parsed back into the human-readable string \texttt{"To be"} via standard UTF-8 parsing compliance.
+
+\section{Training Results \& Scaling Metrics}
+Feste is evaluated across five distinct vocabulary sizes to understand performance changes. Production models (such as GPT-2 or GPT-3) scale much higher, maintaining a vocabulary threshold of $50,257$ tokens.
+
+The performance of a tokenizer is measured by its \textbf{Compression Ratio (CR)}, which is defined as:
+\begin{equation}
+    CR = \frac{\text{Total Raw Bytes of Input Text}}{\text{Total Encoded Tokens Used}}
+\end{equation}
+A higher compression ratio reduces the sequence length passed into the transformer network, lowering active memory consumption and speeding up training loops.
+
+\subsection{The Token Embedding Matrix}
+Once tokens are assigned their integer IDs, they are mapped to high-dimensional vectors. These floating-point numbers are the actual parameters (weights) the model learns during training to understand relationships between tokens. For a baseline vocabulary size of $256$ where each token is allocated $768$ embedding features, the total embedded parameter space equals:
+\begin{equation*}
+    256 \times 768 = 196,608 \text{ parameters}
+\end{equation*}
+
+Table \ref{tab:embed_matrix} shows how Token IDs map to continuous floating-point spaces:
+
+\begin{table}[h!]
+\centering
+\caption{Token Embedding Matrix (Parameter Lookup Table Layout)}
+\label{tab:embed_matrix}
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Token ID} & \textbf{Token String} & \textbf{$d_0$} & \textbf{$d_1$} & \textbf{$d_2$} & \textbf{$d_3$} & \textbf{$\dots$} & \textbf{$d_{511}$} \\
+\midrule
+\textbf{256} & \texttt{th} & 0.1245 & -0.4512 & 0.8821 & -0.0192 & $\dots$ & -0.0034 \\
+\textbf{257} & \texttt{To} & -0.9921 & 0.0154 & 0.3409 & 0.1125 & $\dots$ & 0.7710 \\
+\textbf{258} & \texttt{o b} & 0.3310 & -0.2100 & -0.5541 & 0.9982 & $\dots$ & 0.1093 \\
+\textbf{300} & \texttt{the} & 0.5501 & 0.2219 & -0.1123 & -0.7761 & $\dots$ & -0.4428 \\
+$\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
+\textbf{50256} & \texttt{\textless|endoftext|\textgreater} & -0.1102 & 0.8842 & 0.0012 & -0.3341 & $\dots$ & 0.0001 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Vocabulary Size Cross-Comparisons}
+Tables \ref{tab:metrics_comparison} and \ref{tab:merges_comparison} present the empirical data regarding training execution times, sequence compression behaviors, and vocabulary merge breakdowns:
+
+\begin{table}[h!]
+\centering
+\caption{Tokenizer Metrics Across Varying Vocabulary Caps}
+\label{tab:metrics_comparison}
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Vocabulary Size} & \textbf{Encoded Length (tokens)} & \textbf{Compression Ratio} & \textbf{Training Time (s)} & \textbf{Encoding Time (s)} \\
+\midrule
+256 & 5,422,721 & 1.00x & 0.00 & 0.14 \\
+512 & 2,772,080 & 1.96x & 25.54 & 2.04 \\
+1,024 & 2,189,778 & 2.48x & 77.45 & 4.88 \\
+1,536 & 1,952,470 & 2.78x & 142.51 & 7.46 \\
+20,534 & 1,481,106 & 3.66x & 286.34 & 242.50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\caption{BPE Merges and Lexicon Structural Breakdown}
+\label{tab:merges_comparison}
+\begin{tabular}{cccc}
+\toprule
+\textbf{Vocabulary Size} & \textbf{Base Vocabulary} & \textbf{Additional Merges} & \textbf{Total Merges Breakdown} \\
+\midrule
+\textbf{256} & 256 & 0 & $256 \text{ (Base)} + 0 \text{ merges}$ \\
+\textbf{512} & 256 & 256 & $256 \text{ (Base)} + 256 \text{ merges}$ \\
+\textbf{1024} & 256 & 768 & $256 \text{ (Base)} + 768 \text{ merges}$ \\
+\textbf{1536} & 256 & 1,280 & $256 \text{ (Base)} + 1,280 \text{ merges}$ \\
+\textbf{20,534} & 256 & 20,278 & $256 \text{ (Base)} + 20,278 \text{ merges}$ \\
+\bottomrule
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Trade-offs \& Diminishing Returns}
+While expanding the vocabulary size increases the compression ratio, the gains scale with diminishing returns. This occurs because the initial iterations capture highly frequent, repeating character patterns. Once these core patterns are merged, subsequent rules target rare phrases or outliers that do not repeat often enough to significantly boost compression. Additionally, without advanced sampling optimizations, training time scales linearly with vocabulary size.
+
+\subsection{The Data Scarcity Problem}
+If an extensive vocabulary size (such as $1536$ or higher) is forced onto a relatively small training dataset, the tokenizer is forced to remember small phrases or rare word structures that appear only once. This leads to **embedding collapse**, causing the language model to interpret rare sequences as random statistical noise. Conversely, a very small vocabulary causes long sequence fragmentations, which slows down context processing. Selecting a vocabulary size proportionate to the dataset volume is vital.
+
+\section{Strategic Architectural Choices}
+The overarching design goal of Feste is to choose structural clarity over extreme performance optimization. Understanding how tokenization works step-by-step is prioritized over absolute execution speed.
+
+\subsection{String-Based Token Representation Trade-offs}
+Production tokenizers save memory by keeping merges mapped strictly as paired integers: $(\text{token\_a}, \text{token\_b}) = \text{new\_token}$. Feste, by contrast, deliberately retains hexadecimal character text representations ($\langle 66 \rangle, \langle 6f \rangle$) within its active token configurations.
+
+\begin{table}[h!]
+\centering
+\caption{Pros and Cons of String-Based Token Layouts}
+\label{tab:pros_cons_strings}
+\begin{tabular}{p{0.45\textwidth} p{0.45\textwidth}}
+\toprule
+\textbf{Pros} & \textbf{Cons} \\
+\midrule
+$\bullet$ Highly debuggable and human-readable. & $\bullet$ Wastes active system memory. \\
+$\bullet$ Explicitly clear; directly exposes what each token captures. & $\bullet$ Demands high storage and continuous parsing overhead. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Vocabulary Management}
+For plain English text, mapping token sequences to UTF-8 standards ensures perfect, error-free encoding and decoding cycles. However, this strategy is less optimized for non-English languages, which often require multiple bytes per character. Production-grade tokenizers (like \texttt{tiktoken\_rs}) address these multi-byte issues by pruning low-frequency merges. Feste, by contrast, purposefully retains all merge steps---including outliers---to ensure the entire pipeline can be audited.
+
+\section{Part 2: Tensor Operations}
+The next phase shifts focus to constructing a custom tensor operations calculation library in native Rust to power Feste's transformer layers. 
+
+Tensor computations form the mathematical core of the transformer model. Operations ranging from multi-head self-attention mechanisms to layer normalization simplify down to fundamental matrix arithmetic performed on multi-dimensional numerical arrays. Building this engine from scratch reveals how abstract transformer equations translate into concrete, parallelized calculations on physical computer hardware.
 
 \end{document}
